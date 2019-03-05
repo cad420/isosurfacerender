@@ -38,15 +38,15 @@ test::test(QWidget *parent)
 		//renderer->addVolumeData("isabel", (unsigned char*)readData("D:\\scidata\\Isabel.raw",500,500,100), 500,500,100);
 		//renderer->addIsoSurface("isabel", "isabel_200", QColor(128, 54, 188, 128), 50);
 
-		//renderer->addVolumeData("head", (unsigned char*)readData("D:\\scidata\\head.raw", 256, 256, 225), 256, 256, 225);
-		//renderer->addIsoSurface("head", "head_50", QColor(10,10,255, 200), 50);
-		//renderer->addIsoSurface("head", "head_80", QColor(128,255,0, 200), 120);
+		renderer->addVolumeData("head", (unsigned char*)readData("D:\\scidata\\head.raw", 256, 256, 225), 256, 256, 225);
+		renderer->addIsoSurface("head", "head_50", QColor(10,10,255, 200), 50);
+		renderer->addIsoSurface("head", "head_80", QColor(128,255,0, 200), 120);
 
 		//renderer->addIsoSurface("head", "head_20", QColor(128,87, 32, 100), 20);
 
-		renderer->addVolumeData("com", (unsigned char*)readData(R"(D:\combustion\Combustion_480_720_120\hr.raw)",480,720,120), 480,720,120);
-		renderer->addIsoSurface("com", "com_20", QColor(50, 255, 10, 130), 100);
-		renderer->addIsoSurface("com", "com_50", QColor(10,40,255, 200), 200);
+		//renderer->addVolumeData("com", (unsigned char*)readData(R"(D:\combustion\Combustion_480_720_120\hr.raw)",480,720,120), 480,720,120);
+		//renderer->addIsoSurface("com", "com_20", QColor(50, 255, 10, 130), 100);
+		//renderer->addIsoSurface("com", "com_50", QColor(10,40,255, 200), 200);
 
 		//renderer->addVolumeData("planet", (unsigned char*)readData("D:\\scidata\\prs.raw",300,300,300),300,300,300);
 		//renderer->addIsoSurface("planet", "planet_20", QColor(128, 87, 32, 250),64);
@@ -65,13 +65,15 @@ test::test(QWidget *parent)
 
 	connect(isoValueSlider, &QSlider::valueChanged, [this](int value)
 	{
-		renderer->setIsosurfaceValue("com", "com_20", value);
+		//renderer->setIsosurfaceValue("com", "com_20", value);
 		//renderer->setIsosurfaceValue("planet", "planet_20", value);
+			renderer->setIsosurfaceValue("head", "head_50", value);
 	});
 
 	connect(isoValueSlider2, &QSlider::valueChanged, [this](int value)
 	{
-		renderer->setIsosurfaceValue("com", "com_50", value);
+		//renderer->setIsosurfaceValue("com", "com_50", value);
+			renderer->setIsosurfaceValue("head", "head_80", value);
 	});
 
 	//connect(innerSlider, &QSlider::valueChanged, [this](int value)

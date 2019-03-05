@@ -18,7 +18,7 @@ q_ptr(parent),
 camera({ 0.0,0.0,50 }),
 windowWidth(800),
 windowHeight(600), 
-AverageFragmentPerPixel(15)
+AverageFragmentPerPixel(40)
 {
 	
 }

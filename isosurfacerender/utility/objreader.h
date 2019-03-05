@@ -39,7 +39,7 @@ namespace ysl
 
 		const std::vector<Vector3f> & getNormals()const { return m_normals; }
 
-		const std::vector<Point2f> getTextureCoord()const { return m_textures; }
+		const std::vector<Point2f>& getTextureCoord() const { return m_textures; }
 
 
 		//const Point3f * getVerticesFlatArray()const { return m_vertices.data(); }
