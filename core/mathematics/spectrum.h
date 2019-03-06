@@ -5,7 +5,6 @@
 #include <cmath>
 #include "../mathematics/basetype.h"
 
-
 namespace ysl 
 {
 	template<int nSamples>

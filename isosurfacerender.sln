@@ -10,6 +10,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj",
 		{B12702AD-ABFB-343A-A199-8E24837244A3} = {B12702AD-ABFB-343A-A199-8E24837244A3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "volumerender", "volumerender\volumerender.vcxproj", "{F9425BAC-A2B3-4B9D-8C4D-1B3C2951DAA2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "volumerendertest", "volumerendertest\volumerendertest.vcxproj", "{51512FFD-3169-4394-AB17-7B6B86AD8FAA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F9425BAC-A2B3-4B9D-8C4D-1B3C2951DAA2} = {F9425BAC-A2B3-4B9D-8C4D-1B3C2951DAA2}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -24,6 +31,14 @@ Global
 		{6F58702E-4857-4B23-AE15-0947571F717D}.Debug|x64.Build.0 = Debug|x64
 		{6F58702E-4857-4B23-AE15-0947571F717D}.Release|x64.ActiveCfg = Release|x64
 		{6F58702E-4857-4B23-AE15-0947571F717D}.Release|x64.Build.0 = Release|x64
+		{F9425BAC-A2B3-4B9D-8C4D-1B3C2951DAA2}.Debug|x64.ActiveCfg = Debug|x64
+		{F9425BAC-A2B3-4B9D-8C4D-1B3C2951DAA2}.Debug|x64.Build.0 = Debug|x64
+		{F9425BAC-A2B3-4B9D-8C4D-1B3C2951DAA2}.Release|x64.ActiveCfg = Release|x64
+		{F9425BAC-A2B3-4B9D-8C4D-1B3C2951DAA2}.Release|x64.Build.0 = Release|x64
+		{51512FFD-3169-4394-AB17-7B6B86AD8FAA}.Debug|x64.ActiveCfg = Debug|x64
+		{51512FFD-3169-4394-AB17-7B6B86AD8FAA}.Debug|x64.Build.0 = Debug|x64
+		{51512FFD-3169-4394-AB17-7B6B86AD8FAA}.Release|x64.ActiveCfg = Release|x64
+		{51512FFD-3169-4394-AB17-7B6B86AD8FAA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

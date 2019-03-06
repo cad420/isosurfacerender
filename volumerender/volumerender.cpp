@@ -1,12 +1,13 @@
-#include "volumerenderer.h"
-#include "volumerendererprivate.h"
-
-#include "../isosurfacerender/opengl/openglutils.h"
-#include "../isosurfacerender/mathematics/transformation.h"
+#include "volumerender.h"
+#include "volumerenderprivate.h"
 
 #include <QMouseEvent>
+#include "cameras/camera.h"
+#include <opengl/openglutils.h>
 
-VolumeRenderer::VolumeRenderer(QWidget * parent) :QOpenGLWidget(this),d_ptr(new VolumeRendererPrivate(this))
+VolumeRenderer::VolumeRenderer(QWidget * parent) :
+	QOpenGLWidget(parent),
+	d_ptr(new VolumeRendererPrivate(800, 600,FocusCamera({0,0,10}),this))
 {
 
 }
@@ -14,6 +15,12 @@ VolumeRenderer::VolumeRenderer(QWidget * parent) :QOpenGLWidget(this),d_ptr(new 
 void VolumeRenderer::setVolumeData(unsigned char * data, std::size_t width, std::size_t height, std::size_t depth, float xSpacing, float ySpacing, float zSpacing)
 {
 	Q_D(VolumeRenderer);
+	makeCurrent();
+
+	d->volumeTexture->SetData(OpenGLTexture::R8, OpenGLTexture::RED, OpenGLTexture::UInt8, width, height, depth, data);
+	doneCurrent();
+	// Update Matrix
+	d->model = ysl::Scale(ysl::Vector3f(width*xSpacing,height*ySpacing,depth*zSpacing).Normalized());
 }
 
 void VolumeRenderer::setTransferFunction(float * transferFuncs)
@@ -27,22 +34,41 @@ void VolumeRenderer::setTransferFunction(float * transferFuncs)
 	doneCurrent();
 }
 
+void VolumeRenderer::setIlluminationParams(float ka, float kd, float ks, float shininess)
+{
+	Q_D(VolumeRenderer);
+	d->ka = ka;
+	d->kd = kd;
+	d->ks = ks;
+	d->shininess = shininess;
+	update();
+}
+
 void VolumeRenderer::initializeGL()
 {
 	Q_D(VolumeRenderer);
+
+	gl3wInit();
+	if (!gl3wIsSupported(4, 4))
+	{
+		ysl::Error("OpenGL 4.4 or higher is needed.");
+	}
+	glClearColor(1, 1, 1, 1.0);
+
 	d->InitShader();
 	d->InitFrameBuffer();
 	d->CreateScreenQuads();
+	d->CreateVolumeTexture();
+	d->CreateTFTexture();
 	d->InitProxyGeometry();
 }
 
 void VolumeRenderer::paintGL()
 {
-
 	Q_D(VolumeRenderer);
-
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+	GL_ERROR_REPORT;
 	// clear intermediate result
 	d->g_framebuffer->Bind();
 	d->g_proxyVAO.bind();
@@ -63,31 +89,44 @@ void VolumeRenderer::paintGL()
 	glClear(GL_COLOR_BUFFER_BIT);						// Do not clear depth buffer here.
 	glDepthFunc(GL_GREATER);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-	glDepthFunc(GL_LESS);
-
+	
+	GL_ERROR_REPORT;
 	d->g_positionShaderProgram.unbind();
-	d->g_framebuffer->Unbind();
+	//d->g_framebuffer->Unbind();
+	glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
 
+	glDepthFunc(GL_LESS);
+	GL_ERROR_REPORT;
 	d->g_rayCastingShaderProgram.bind();
+	GL_ERROR_REPORT;
 	d->g_rayCastingShaderProgram.setUniformValue("viewMatrix", d->camera.view().Matrix());
 	d->g_rayCastingShaderProgram.setUniformValue("orthoMatrix", d->ortho.Matrix());
+	d->g_rayCastingShaderProgram.setUniformSampler("texVolume", OpenGLTexture::TextureUnit3, *d->volumeTexture);
 	d->g_rayCastingShaderProgram.setUniformSampler("texStartPos", OpenGLTexture::TextureUnit0, *d->g_texEntryPos);
 	d->g_rayCastingShaderProgram.setUniformSampler("texEndPos", OpenGLTexture::TextureUnit1, *d->g_texExitPos);
 	d->g_rayCastingShaderProgram.setUniformSampler("texTransfunc", OpenGLTexture::TextureUnit2, *d->g_texTransferFunction);
+	GL_ERROR_REPORT;
 	d->g_rayCastingShaderProgram.setUniformValue("step", (float)0.01);
-
-	d->g_rayCastingShaderProgram.setUniformValue("ka", (float)0.5);
-	d->g_rayCastingShaderProgram.setUniformValue("ks", (float)0.5);
-	d->g_rayCastingShaderProgram.setUniformValue("kd", (float)0.5);
-	d->g_rayCastingShaderProgram.setUniformValue("shininess", int(500));
-
-
+	GL_ERROR_REPORT;
+	d->g_rayCastingShaderProgram.setUniformValue("ka", d->ka);
+	d->g_rayCastingShaderProgram.setUniformValue("ks", d->kd);
+	d->g_rayCastingShaderProgram.setUniformValue("kd", d->ks);
+	d->g_rayCastingShaderProgram.setUniformValue("shininess", d->shininess);
+	GL_ERROR_REPORT;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	d->screenQuads.vao.bind();
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_DST_ALPHA);
 	glDrawArrays(GL_TRIANGLES, 0, 6);			// Draw into default framebuffer
 	glDisable(GL_DEPTH_TEST);
-
-
+	glDisable(GL_BLEND);
+	GL_ERROR_REPORT;
+	d->screenQuads.vao.unbind();
 	d->g_rayCastingShaderProgram.unbind();
+
+	//d->g_texEntryPos->SaveAsImage(R"(d1.png)");
+//	d->g_texExitPos->SaveAsImage(R"(d2.png)");
+
 }
 
 void VolumeRenderer::resizeGL(int w, int h)
@@ -97,8 +136,11 @@ void VolumeRenderer::resizeGL(int w, int h)
 	d->windowWidth = w;
 	d->windowHeight = h;
 	d->UpdateSize(w, h);
-	//d->UpdateMatrix(d->windowWidth, d->windowHeight);
 	update();
+}
+
+VolumeRenderer::~VolumeRenderer()
+{
 }
 
 void VolumeRenderer::mouseMoveEvent(QMouseEvent* event)

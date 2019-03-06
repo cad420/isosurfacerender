@@ -1,8 +1,8 @@
 
-#include "volumerendererprivate.h"
-#include "../isosurfacerender/opengl/openglutils.h"
+#include "volumerenderprivate.h"
+#include "opengl/openglutils.h"
 
-
+#include "volumerender.h"
 
 const static int g_proxyGeometryVertexIndices[] = { 1,3,7,1,7,5,0,4,6,0,6,2,2,6,7,2,7,3,0,1,5,0,5,4,4,5,7,4,7,6,0,2,3,0,3,1 };
 static const float xCoord = 1.0, yCoord = 1.0, zCoord = 1.0;
@@ -26,12 +26,16 @@ static float g_proxyGeometryVertices[] = {
 };
 
 
-
-VolumeRendererPrivate::VolumeRendererPrivate(QWidget * parent) :q_ptr(parent),
-windowWidth(800),
-windowHeight(600)
+VolumeRendererPrivate::VolumeRendererPrivate(int width, int height,const FocusCamera & camera,VolumeRenderer* parent):
+	q_ptr(parent),
+	windowWidth(width),
+	windowHeight(height),
+	camera(camera),
+	ka(1),
+	kd(1),
+	ks(1),
+	shininess(50)
 {
-
 }
 
 void VolumeRendererPrivate::ResizeScreenQuads(int width, int height)
@@ -44,6 +48,7 @@ void VolumeRendererPrivate::ResizeScreenQuads(int width, int height)
 void VolumeRendererPrivate::InitFrameBuffer()
 {
 
+	Q_Q(VolumeRenderer);
 	g_texEntryPos = OpenGLTexture::CreateTexture2DRect(OpenGLTexture::RGBA32F,
 		OpenGLTexture::Linear,
 		OpenGLTexture::Linear,
@@ -77,15 +82,17 @@ void VolumeRendererPrivate::InitFrameBuffer()
 		windowHeight,
 		nullptr);
 
-
+	//g_texDepth->SetData(OpenGLTexture::InternalDepthComponent, OpenGLTexture::ExternalDepthComponent, OpenGLTexture::Float32, x, y, 0, nullptr);
 
 
 	g_framebuffer = std::shared_ptr<OpenGLFramebufferObject>(new OpenGLFramebufferObject);
 	g_framebuffer->Bind();
 	g_framebuffer->AttachTexture(OpenGLFramebufferObject::ColorAttachment0, g_texEntryPos);
 	g_framebuffer->AttachTexture(OpenGLFramebufferObject::ColorAttachment1, g_texExitPos);
+	g_framebuffer->AttachTexture(OpenGLFramebufferObject::DepthAttachment, g_texDepth);
 	g_framebuffer->CheckFramebufferStatus();
-	g_framebuffer->Unbind();
+	//g_framebuffer->Unbind();
+	glBindFramebuffer(GL_FRAMEBUFFER,q->defaultFramebufferObject());
 }
 
 void VolumeRendererPrivate::InitProxyGeometry()
@@ -113,9 +120,7 @@ void VolumeRendererPrivate::InitProxyGeometry()
 	g_proxyEBO->Bind();
 	g_proxyEBO->AllocateFor(g_proxyGeometryVertexIndices, sizeof(g_proxyGeometryVertexIndices));
 	GL_ERROR_REPORT;
-
 	g_proxyVAO.unbind();
-
 
 }
 
@@ -132,12 +137,22 @@ void VolumeRendererPrivate::InitShader()
 	g_positionShaderProgram.addShaderFromFile("position_f.glsl", ysl::ShaderProgram::ShaderType::Fragment);
 	g_positionShaderProgram.link();
 
-	//  Draw the result texture into the default framebuffer
-	g_quadsShaderProgram.create();
-	g_quadsShaderProgram.addShaderFromFile("quadsshader_v.glsl", ysl::ShaderProgram::ShaderType::Vertex);
-	g_quadsShaderProgram.addShaderFromFile("quadsshader_f.glsl", ysl::ShaderProgram::ShaderType::Fragment);
-	g_quadsShaderProgram.link();
 
+}
+
+void VolumeRendererPrivate::CreateVolumeTexture()
+{
+	volumeTexture = OpenGLTexture::CreateTexture3D(OpenGLTexture::R8,		// R16F
+		OpenGLTexture::Linear,
+		OpenGLTexture::Linear,
+		OpenGLTexture::ClampToEdge,
+		OpenGLTexture::ClampToEdge,
+		OpenGLTexture::ClampToEdge,
+		OpenGLTexture::RED,
+		OpenGLTexture::UInt8,
+		10,
+		10,
+		10,nullptr);
 }
 
 void VolumeRendererPrivate::CreateScreenQuads()
@@ -171,7 +186,6 @@ void VolumeRendererPrivate::CreateScreenQuads()
 
 void VolumeRendererPrivate::CreateTFTexture()
 {
-
 	g_texTransferFunction = OpenGLTexture::CreateTexture1D(OpenGLTexture::RGBA32F,
 		OpenGLTexture::Linear, OpenGLTexture::Linear, OpenGLTexture::ClampToEdge, OpenGLTexture::RGBA, OpenGLTexture::Float32, 256, nullptr);
 }
@@ -192,8 +206,8 @@ void VolumeRendererPrivate::UpdateSize(int x, int y)
 		OpenGLTexture::ExternalDepthComponent,
 		OpenGLTexture::Float32, x, y, 0, nullptr);
 
-	proj.SetPerspective(45.0f, float(x) / y, 0.01, 1000);
-	ortho.SetOrtho(0, x, 0, y, -10, 100);
+	proj.SetGLPerspective(45.0f, float(x) / y, 0.01, 1000);
+	ortho.SetGLOrtho(0, x, 0, y, -10, 100);
 
 	screenQuads.vbo->Bind();
 	float screenSize[] =

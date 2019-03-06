@@ -6,7 +6,6 @@
 
 #include <QOpenGLWidget>
 
-
 class ISOSurfaceRendererPrivate;
 
 class Q_DECL_EXPORT ISOSurfaceRenderer: public QOpenGLWidget

@@ -3,11 +3,12 @@
 //
 
 #include "marchingcubes.h"
+#include "utility/error.h"
+#include "shape/triangle.h"
+
 #include "../mathematics/geometry.h"
 #include "../mathematics/numeric.h"
 #include <algorithm>
-#include "utility/error.h"
-#include "shape/triangle.h"
 
 
 //ysl::TriangleMesh MarchingCubes(const char *data, char isovalue) 

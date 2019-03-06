@@ -8,15 +8,8 @@
 
 //#include <trianglemesh.h>
 #include <vector>
-#include "mathematics/geometry.h"
-
-#include "../mathematics/bound.h"
+#include "../mathematics/geometry.h"
 #include "shape/triangle.h"
-
-
-namespace ysl {
-	class Bound3i;
-}
 
 class MeshGenerator
 {

@@ -4,7 +4,6 @@
 #include "../mathematics/geometry.h"
 #include "../mathematics/transformation.h"
 
-
 class FocusCamera
 {
 	static constexpr float YAW = -90.0f;

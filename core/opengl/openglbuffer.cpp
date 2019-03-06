@@ -1,10 +1,7 @@
-
 #include "../gl3w/GL/gl3w.h"
 #include "../utility/error.h"
 #include "openglbuffer.h"
 #include "openglutils.h"
-
-
 
 OpenGLBuffer::OpenGLBuffer(BufferTarget type,BufferUsage usage,BufferType typ):
 target(type),
@@ -14,7 +11,6 @@ bufferId(0),
 dataSize(0),
 currentContext(OpenGLCurrentContext::GetCurrentOpenGLContext())
 {
-
 	if (!currentContext)
 	{
 		ysl::Error("No OpenGL Context");
@@ -128,24 +124,3 @@ OpenGLBuffer::~OpenGLBuffer()
 		ysl::Warning("The context is different from the one with which the resource is created");
 	glDeleteBuffers(1, &bufferId);
 }
-
-//
-//GLenum OpenGLBuffer::glEnumTarget() const
-//{
-//	if (m_target == BufferTarget::VertexArrayBuffer)
-//		return GL_ARRAY_BUFFER;
-//	if (m_target == BufferTarget::ElementArrayBuffer)
-//		return GL_ELEMENT_ARRAY_BUFFER;
-//	return 0;
-//}
-//
-//GLenum OpenGLBuffer::glBufferUsage() const
-//{
-//	if (m_usage == BufferUsage::Dynamic)
-//		return GL_DYNAMIC_DRAW;
-//	if (m_usage == BufferUsage::Static)
-//		return GL_STATIC_DRAW;
-//	if (m_usage == BufferUsage::Stream)
-//		return GL_STREAM_DRAW;
-//	return 0;
-//}

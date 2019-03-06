@@ -1,7 +1,6 @@
 #pragma once
 
 #include <qglobal.h>
-
 #include "opengl/texture.h"
 #include "opengl/shader.h"
 #include "cameras/camera.h"
@@ -11,9 +10,9 @@
 #include <QSharedPointer>
 #include "shape/triangle.h"
 
+
 class QPainter;
 class ISOSurfaceRenderer;
-
 
 class ISOSurfaceRendererPrivate
 {
@@ -127,5 +126,5 @@ public:
 
 private:
 	ISOSurfaceRenderer * const q_ptr;
-	Q_DECLARE_PUBLIC(ISOSurfaceRenderer);
+	Q_DECLARE_PUBLIC(ISOSurfaceRenderer)
 };

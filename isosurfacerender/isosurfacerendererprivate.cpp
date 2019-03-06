@@ -8,6 +8,9 @@
 #include "algorithm/marchingcubes.h"
 
 #include <QPainter>
+#include "opengl/openglbuffer.h"
+#include "opengl/shader.h"
+#include "opengl/openglvertexarrayobject.h"
 
 //#define TESTSHADER
 
@@ -303,8 +306,8 @@ void ISOSurfaceRendererPrivate::ResizeHeadPointerImage(int width, int height)
 
 void ISOSurfaceRendererPrivate::UpdateMatrix(int width, int height)
 {
-	proj.SetPerspective(45.0f, float(width) / height, 0.01, 1000);
-	ortho.SetOrtho(0, width, 0, height,-10 , 100);
+	proj.SetGLPerspective(45.0f, float(width) / height, 0.01, 1000);
+	ortho.SetGLOrtho(0, width, 0, height,-10 , 100);
 }
 
 void ISOSurfaceRendererPrivate::ResizeScreenQuads(int width, int height)

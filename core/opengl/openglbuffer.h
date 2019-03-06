@@ -2,12 +2,10 @@
 #ifndef _OPENGLBUFFER_H_
 #define _OPENGLBUFFER_H_
 
-#include "gl3w/GL/gl3w.h"
-
-#include <memory>
-
+#include "../gl3w/GL/gl3w.h"
 #include "openglcontext.h"
 #include "texture.h"
+#include <memory>
 
 class OpenGLBuffer
 {

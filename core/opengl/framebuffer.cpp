@@ -1,9 +1,6 @@
 
 #include "framebuffer.h"
 #include "../utility/error.h"
-
-#include <QOpenGLWidget>
-
 #include "gl3w/GL/gl3w.h"
 
 

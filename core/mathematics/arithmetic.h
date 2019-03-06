@@ -5,7 +5,7 @@
 #include "geometry.h"
 
 #include "numeric.h"
-#include "../mathematics/spectrum.h"
+#include "spectrum.h"
 
 /*
 	* Sample Functions
