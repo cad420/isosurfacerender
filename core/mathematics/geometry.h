@@ -336,6 +336,11 @@ namespace ysl
 			return Vector2<T>{x,y};
 		}
 
+		Float LengthSquared()const
+		{
+			return x * x + y * y;
+		}
+
 
 		template<typename U>
 		explicit operator Point2<U>()const

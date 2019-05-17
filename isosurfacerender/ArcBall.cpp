@@ -21,7 +21,7 @@ ysl::Vector3f ArcBall::VecFromSphereCenter(const ysl::Point2i & screenPos) const
 {
 	const auto p = NormalizedCartesianCoordInCenter(screenPos);
 	ysl::Vector3f v = { p.x,p.y,0.0 };
-	const auto s = p.LengthSqured();
+	const auto s = p.LengthSquared();
 	if(s <=1)
 		v.z = std::sqrt(1-s);
 	else

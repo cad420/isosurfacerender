@@ -3,6 +3,7 @@
 #include "opengl/openglutils.h"
 
 #include "volumerender.h"
+#include "../volumerendertest/tf.h"
 
 const static int g_proxyGeometryVertexIndices[] = { 1,3,7,1,7,5,0,4,6,0,6,2,2,6,7,2,7,3,0,1,5,0,5,4,4,5,7,4,7,6,0,2,3,0,3,1 };
 static const float xCoord = 1.0, yCoord = 1.0, zCoord = 1.0;
@@ -186,8 +187,22 @@ void VolumeRendererPrivate::CreateScreenQuads()
 
 void VolumeRendererPrivate::CreateTFTexture()
 {
+	Q_Q(VolumeRenderer);
 	g_texTransferFunction = OpenGLTexture::CreateTexture1D(OpenGLTexture::RGBA32F,
 		OpenGLTexture::Linear, OpenGLTexture::Linear, OpenGLTexture::ClampToEdge, OpenGLTexture::RGBA, OpenGLTexture::Float32, 256, nullptr);
+
+
+
+	std::vector<ysl::RGBASpectrum> tfData(256);
+	ysl::TransferFunction tfObject;
+	tfObject.read("tf1.tfi");
+	tfObject.FetchData(tfData.data(), 256);
+
+	g_texTransferFunction->SetData(OpenGLTexture::RGBA32F,
+		OpenGLTexture::RGBA,
+		OpenGLTexture::Float32,
+		256, 0, 0, tfData.data());
+
 }
 
 void VolumeRendererPrivate::UpdateSize(int x, int y)

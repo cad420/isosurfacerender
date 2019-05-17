@@ -75,7 +75,7 @@ void VolumeRenderer::paintGL()
 	// Cull face
 	d->g_positionShaderProgram.bind();
 	d->g_positionShaderProgram.setUniformValue("projMatrix", d->proj.Matrix());
-	d->g_positionShaderProgram.setUniformValue("worldMatrix", ysl::Transform{}.Matrix());
+	d->g_positionShaderProgram.setUniformValue("worldMatrix", d->model.Matrix());
 	d->g_positionShaderProgram.setUniformValue("viewMatrix", d->camera.view().Matrix());
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);					// Draw into attachment 0
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -125,7 +125,7 @@ void VolumeRenderer::paintGL()
 	d->g_rayCastingShaderProgram.unbind();
 
 	//d->g_texEntryPos->SaveAsImage(R"(d1.png)");
-//	d->g_texExitPos->SaveAsImage(R"(d2.png)");
+    //d->g_texExitPos->SaveAsImage(R"(d2.png)");
 
 }
 

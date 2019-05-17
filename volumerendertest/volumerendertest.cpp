@@ -21,9 +21,9 @@ volumerendertest::volumerendertest(QWidget *parent)
 
 	connect(addButton, &QPushButton::clicked, [this]()
 	{
-		int x = 480, y = 480, z = 480;
+			int x = 300, y= 124, z = 124;
 		std::unique_ptr<unsigned char[]> buf(new unsigned char[x*y*z]);
-		std::ifstream ifs(R"(D:\scidata\abc\s1_480_480_480.raw)");
+		std::ifstream ifs(R"(D:\density.raw)");
 		if(ifs.is_open() == false)
 		{
 			std::cout << "file can not be opened\n";
@@ -35,7 +35,7 @@ volumerendertest::volumerendertest(QWidget *parent)
 
 		std::vector<ysl::RGBASpectrum> tfData(256);
 		ysl::TransferFunction tfObject;
-		tfObject.read("d:\\scidata\\tf1.tfi");
+		tfObject.read("d:\\scidata\\std_tf1d.TF1D");
 		tfObject.FetchData(tfData.data(), 256);
 
 		renderer->setTransferFunction(reinterpret_cast<float*>(tfData.data()));

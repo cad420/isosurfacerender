@@ -10,6 +10,7 @@
 #include <QPainter>
 #include <QVector3D>
 #include "ArcBall.h"
+#include <QSurfaceFormat>
 
 
 //#define TESTSHADER
@@ -141,7 +142,7 @@ void ISOSurfaceRenderer::paintGL()
 				d->oitListShader.setUniformValue("model_matrix", (d->rotation*(m.modelTransform)).Matrix());
 				d->oitListShader.setUniformValue("object_color", m.color);
 #endif
-				glPatchParameteri(GL_PATCH_VERTICES, 3);
+				//glPatchParameteri(GL_PATCH_VERTICES, 3);
 
 				//glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL,outer_level);
 				//glPatchParameterfv(GL_PATCH_DEFAULT_INNER_LEVEL,inner_level);
@@ -156,6 +157,9 @@ void ISOSurfaceRenderer::paintGL()
 			}
 		}
 	}
+
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	if(d->boundingBoxVisible)
 	{
 		float c[4] = { 1,0,0,1 };
@@ -349,7 +353,8 @@ void ISOSurfaceRenderer::setIsosurfacesVisibility(const QString & dataName, bool
 
 void ISOSurfaceRenderer::setBoundingBoxVisibility(bool visibile)
 {
-	return;
+	Q_D(ISOSurfaceRenderer);
+	d->boundingBoxVisible = visibile;
 }
 
 void ISOSurfaceRenderer::removeVolumeData(const QString & dataName)
