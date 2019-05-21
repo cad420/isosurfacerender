@@ -27,6 +27,11 @@ MeshGenerator::MeshGenerator(const unsigned char *d, ysl::Size3 size):
 	Preprocess();
 }
 
+MeshGenerator::MeshGenerator(const unsigned char * d, ysl::Size3 size, ysl::Vec3f space):data(d),dataSize(size),dataXSpace(space.x),dataYSpace(space.y),dataZSpace(space.z)
+{
+	Preprocess();
+}
+
 MeshGenerator::MeshGenerator(MeshGenerator&& generator)noexcept
 {
 	root = generator.root;

@@ -27,6 +27,8 @@ public:
 
 
 	void addVolumeData(const QString & dataName, const unsigned char* data, std::size_t width, std::size_t height, std::size_t depth);
+
+	void addVolumeData(const QString & dataName, const unsigned char* data, std::size_t width, std::size_t height, std::size_t depth, float xSpace, float ySpace, float zSpace);
 	/**
 	 * \brief 
 	 * \param dataName 

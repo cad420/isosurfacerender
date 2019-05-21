@@ -329,6 +329,8 @@ private:
 public:
     MeshGenerator(const unsigned char * d,ysl::Size3 size);
 
+	MeshGenerator(const unsigned char * d,ysl::Size3 size,ysl::Vec3f space);
+
     MeshGenerator(const MeshGenerator &) = delete;
 
 	MeshGenerator(MeshGenerator && generator)noexcept;
@@ -341,6 +343,8 @@ public:
 	//std::pair<std::vector<ysl::Point3f>, std::vector<ysl::Vector3f>> GenerateMeshEx(int value)const;
 
 	std::shared_ptr<ysl::TriangleMesh> GenerateMesh(int value)const;
+
+	ysl::Vec3f space()const { return ysl::Vec3f{ dataXSpace,dataYSpace,dataZSpace }; }
 
 
 

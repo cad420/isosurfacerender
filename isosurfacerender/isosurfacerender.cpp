@@ -227,6 +227,17 @@ void ISOSurfaceRenderer::addVolumeData(const QString& dataName, const unsigned c
 	}
 }
 
+void ISOSurfaceRenderer::addVolumeData(const QString& dataName, const unsigned char* data, std::size_t width,
+	std::size_t height, std::size_t depth, float xSpace, float ySpace, float zSpace)
+{
+	Q_D(ISOSurfaceRenderer);
+	const auto itr = d->dataName2Data.find(dataName);
+	if (itr == d->dataName2Data.end())
+	{
+		d->dataName2Data[dataName] = ISOSurfaceRendererPrivate::ValueType{ {}, QSharedPointer<MeshGenerator>{new MeshGenerator{data, { width,height,depth },{xSpace,ySpace,zSpace}}} };
+	}
+}
+
 void ISOSurfaceRenderer::addIsoSurface(const QString& dataName, const QString& isoName, const QColor& color,
                                        int isovalue)
 {
@@ -246,15 +257,16 @@ void ISOSurfaceRenderer::addIsoSurface(const QString& dataName, const QString& i
 			itr->first[isoName] = iter;
 
 			const auto dataSize = itr->second->DataSize();
+			const auto space = itr->second->space();
 			auto scale = ysl::Transform{};
-			scale.SetScale(0.2,0.2,0.2);
+			scale.SetScale(0.2*space.x,0.2*space.y,0.2*space.z);
 			auto translate = ysl::Transform{};
 			translate.SetTranslate((-float(dataSize.x)) / 2.0, (-float(dataSize.y)) / 2.0, (-float(dataSize.z)) / 2.0);
 			iter->modelTransform = scale * translate;
 			iter->name = (isoName).toStdString();
 
 			auto boxScale = ysl::Transform{}, boxTranslate = ysl::Transform{};
-			boxScale.SetScale(ysl::Vector3f(dataSize.x, dataSize.y, dataSize.z)*0.2);
+			boxScale.SetScale(ysl::Vector3f(dataSize.x*space.x, dataSize.y*space.y, dataSize.z*space.z)*0.2);
 			boxTranslate.SetTranslate(-.5f,-.5f,-.5f);
 			d->boundingBox.modelTransform = boxScale * boxTranslate;
 

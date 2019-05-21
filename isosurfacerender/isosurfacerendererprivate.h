@@ -106,6 +106,7 @@ public:
 	ysl::Point2i lastMousePos;
 	std::shared_ptr<OpenGLTexture> imageList;
 	std::shared_ptr<OpenGLTexture> depthTexture;
+	//ysl::Vec3f space ={1.0,1.0,1.0};
 
 	//std::shared_ptr<OpenGLFramebufferObject> framebuffer;
 
