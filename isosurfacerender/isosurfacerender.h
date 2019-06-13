@@ -43,6 +43,11 @@ public:
 
 	void setIsosurfaceColor(const QString & dataName, const QString & isoName, const QColor & color);
 
+	void setIntersectionOfIsosurfaces(const QString & intersectionName,const QColor & color,
+		const QString & dataName0,const QString & isoName0,int value0, 
+		const QString & dataName1,const QString & isoName1,int value1,
+		int threshold,int owner);
+
 	void removeIsosurface(const QString & dataName, const QString & isoName);
 
 	void setIsosurfaceVisibility(const QString & dataName, const QString & isoName,bool visible);

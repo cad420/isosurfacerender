@@ -254,6 +254,7 @@ void ISOSurfaceRenderer::addIsoSurface(const QString& dataName, const QString& i
 
 			auto iter = d->CreateMesh();
 			d->CreateMesh(itr->second->GenerateMesh(isovalue),*iter);
+
 			itr->first[isoName] = iter;
 
 			const auto dataSize = itr->second->DataSize();
@@ -310,6 +311,111 @@ void ISOSurfaceRenderer::setIsosurfaceColor(const QString& dataName, const QStri
 			(*itr1)->color = ysl::RGBASpectrum{ c };
 		}
 	}
+}
+
+void ISOSurfaceRenderer::setIntersectionOfIsosurfaces(const QString & intersectionName,const QColor & color,const QString& dataName0,const QString& isoName0,int value0,
+	const QString& dataName1, const QString& isoName1,int value1, int threshold, int owner)
+{
+	Q_D(ISOSurfaceRenderer);
+	const auto itr0 = d->dataName2Data.find(dataName0);		// &ValueType
+
+	if (itr0 != d->dataName2Data.end())
+	{
+		const auto itr_ = (itr0->first).find(isoName0);		
+		if (itr_ == itr0->first.end())
+		{
+			return;
+		}
+	}
+
+	const auto itr1 = d->dataName2Data.find(dataName1);		// &ValueType
+	if (itr1 != d->dataName2Data.end())
+	{
+		const auto itr_ = (itr1->first).find(isoName1);		
+		if (itr_ == itr1->first.end())
+		{
+			return;
+		}
+	}
+
+	auto s1 = itr0->second->DataSize();
+	auto s2 = itr1->second->DataSize();
+
+	if (s1.x != s2.x || s1.y != s2.y || s1.z != s2.z)
+	{
+		qWarning("The size of two data set do not match");
+		return;
+	}
+
+	if(owner == 1)
+	{
+		if (itr1->first.find(intersectionName) == itr1->first.end())
+		{
+			auto isect_itr = d->CreateMesh();
+			d->CreateMesh(itr1->second->GenerateIntersectionMeshOf(value1, itr0->second->Data(), value0, threshold), *isect_itr);
+			itr1->first[intersectionName] = isect_itr;
+
+			const auto dataSize = itr1->second->DataSize();
+			const auto space = itr1->second->space();
+			auto scale = ysl::Transform{};
+			scale.SetScale(0.2*space.x, 0.2*space.y, 0.2*space.z);
+			auto translate = ysl::Transform{};
+			translate.SetTranslate((-float(dataSize.x)) / 2.0, (-float(dataSize.y)) / 2.0, (-float(dataSize.z)) / 2.0);
+			isect_itr->modelTransform = scale * translate;
+			isect_itr->name = (intersectionName).toStdString();
+
+			auto boxScale = ysl::Transform{}, boxTranslate = ysl::Transform{};
+			boxScale.SetScale(ysl::Vector3f(dataSize.x*space.x, dataSize.y*space.y, dataSize.z*space.z)*0.2);
+			boxTranslate.SetTranslate(-.5f, -.5f, -.5f);
+			d->boundingBox.modelTransform = boxScale * boxTranslate;
+
+			//iter->visible = true;
+			float c[4] = { color.redF(), color.greenF(), color.blueF(), color.alphaF() };
+			isect_itr->color = ysl::RGBASpectrum{ c };
+
+		}else
+		{
+			auto itr_ = itr1->first.find(intersectionName);
+			d->CreateMesh(itr1->second->GenerateIntersectionMeshOf(value1, itr0->second->Data(), value0, threshold), **itr_);
+		}
+
+		update();
+	}else
+	{
+		if (itr0->first.find(intersectionName) == itr0->first.end())
+		{
+			auto isect_itr = d->CreateMesh();
+			d->CreateMesh(itr0->second->GenerateIntersectionMeshOf(value0, itr1->second->Data(), value1, threshold), *isect_itr);
+			itr0->first[intersectionName] = isect_itr;
+
+			const auto dataSize = itr0->second->DataSize();
+			const auto space = itr0->second->space();
+			auto scale = ysl::Transform{};
+			scale.SetScale(0.2*space.x, 0.2*space.y, 0.2*space.z);
+			auto translate = ysl::Transform{};
+			translate.SetTranslate((-float(dataSize.x)) / 2.0, (-float(dataSize.y)) / 2.0, (-float(dataSize.z)) / 2.0);
+			isect_itr->modelTransform = scale * translate;
+			isect_itr->name = (intersectionName).toStdString();
+
+			auto boxScale = ysl::Transform{}, boxTranslate = ysl::Transform{};
+			boxScale.SetScale(ysl::Vector3f(dataSize.x*space.x, dataSize.y*space.y, dataSize.z*space.z)*0.2);
+			boxTranslate.SetTranslate(-.5f, -.5f, -.5f);
+			d->boundingBox.modelTransform = boxScale * boxTranslate;
+
+			//iter->visible = true;
+			float c[4] = { color.redF(), color.greenF(), color.blueF(), color.alphaF() };
+			isect_itr->color = ysl::RGBASpectrum{ c };
+
+		}
+		else
+		{
+			auto itr_ = itr0->first.find(intersectionName);
+			d->CreateMesh(itr0->second->GenerateIntersectionMeshOf(value0, itr1->second->Data(), value1, threshold), **itr_);
+		}
+
+		update();
+	}
+
 }
 
 void ISOSurfaceRenderer::removeIsosurface(const QString& dataName, const QString& isoName)

@@ -16,7 +16,7 @@
 //
 //}
 
-MeshGenerator::MeshGenerator(const unsigned char *d, ysl::Size3 size):
+MeshGenerator::MeshGenerator(const unsigned char *d, ysl::Size3 size) :
 	data(d),
 	dataSize(size),
 	dataXSpace(1.0),
@@ -27,7 +27,7 @@ MeshGenerator::MeshGenerator(const unsigned char *d, ysl::Size3 size):
 	Preprocess();
 }
 
-MeshGenerator::MeshGenerator(const unsigned char * d, ysl::Size3 size, ysl::Vec3f space):data(d),dataSize(size),dataXSpace(space.x),dataYSpace(space.y),dataZSpace(space.z)
+MeshGenerator::MeshGenerator(const unsigned char * d, ysl::Size3 size, ysl::Vec3f space) :data(d), dataSize(size), dataXSpace(space.x), dataYSpace(space.y), dataZSpace(space.z)
 {
 	Preprocess();
 }
@@ -79,9 +79,9 @@ std::shared_ptr<ysl::TriangleMesh> MeshGenerator::GenerateMesh(int value) const
 
 	constexpr int step = 1;
 
-	for (int z = 0; z < dataSize.z - step; z+=step) {
-		for (int y = 0; y < dataSize.y - step; y+=step) {
-			for (int x = 0; x < dataSize.x - step; x+=step) {
+	for (int z = 0; z < dataSize.z - step; z += step) {
+		for (int y = 0; y < dataSize.y - step; y += step) {
+			for (int x = 0; x < dataSize.x - step; x += step) {
 
 				int id = 0;
 				id += data[ysl::Linear({ x, y + step, z + step }, { dataSize.x,dataSize.y })] > value ? (1 << 0) : (0);
@@ -100,23 +100,21 @@ std::shared_ptr<ysl::TriangleMesh> MeshGenerator::GenerateMesh(int value) const
 
 					for (int j = 0; j < 3; j++) {
 						int e = m_triangleTable[id][i + j];
-						int v1x = x + m_edgeToVertex[e][0]*step;
-						int v1y = y + m_edgeToVertex[e][1]*step;
-						int v1z = z + m_edgeToVertex[e][2]*step;
-						int v2x = x + m_edgeToVertex[e][3]*step;
-						int v2y = y + m_edgeToVertex[e][4]*step;
-						int v2z = z + m_edgeToVertex[e][5]*step;
+						int v1x = x + m_edgeToVertex[e][0] * step;
+						int v1y = y + m_edgeToVertex[e][1] * step;
+						int v1z = z + m_edgeToVertex[e][2] * step;
+						int v2x = x + m_edgeToVertex[e][3] * step;
+						int v2y = y + m_edgeToVertex[e][4] * step;
+						int v2z = z + m_edgeToVertex[e][5] * step;
 
-						int v1value = data[ysl::Linear({ v1x, v1y, v1z },{ dataSize.x,dataSize.y })];
-						int v2value = data[ysl::Linear({ v2x, v2y, v2z },{ dataSize.x,dataSize.y })];
-
+						int v1value = data[ysl::Linear({ v1x, v1y, v1z }, { dataSize.x,dataSize.y })];
+						int v2value = data[ysl::Linear({ v2x, v2y, v2z }, { dataSize.x,dataSize.y })];
 						//ysl::Log("%d %d", v1z,v2z);
-
 						tri[j] = ysl::Lerp((float)(value - v1value) / (float)(v2value - v1value),
 							ysl::Point3f(v1x, v1y, v1z),
 							ysl::Point3f(v2x, v2y, v2z));
 						triangles.push_back(tri[j]);
-						normals.push_back(ysl::Vector3f((gradient[ysl::Linear({ v1x,v1y,v1z }, { dataSize.x,dataSize.y })] + gradient[ysl::Linear({ v2x, v2y, v2z },{ dataSize.x,dataSize.y })]) / 2));
+						normals.push_back(ysl::Vector3f((gradient[ysl::Linear({ v1x,v1y,v1z }, { dataSize.x,dataSize.y })] + gradient[ysl::Linear({ v2x, v2y, v2z }, { dataSize.x,dataSize.y })]) / 2));
 					}
 					//normals.push_back(-ysl::Vector3f::Cross(tri[1]-tri[0],tri[2]-tri[1]));
 				}
@@ -138,6 +136,198 @@ std::shared_ptr<ysl::TriangleMesh> MeshGenerator::GenerateMesh(int value) const
 		triangles.size(),
 		indices.data(),
 		triangles.size() / 3);
+}
+
+
+std::shared_ptr<ysl::TriangleMesh> MeshGenerator::GenerateIntersectionMeshOf(int self, const unsigned char* d2, int value2, int threshold)
+{
+	std::vector<ysl::Point3f> triangles;
+	std::vector<ysl::Vector3f> normals;
+
+	constexpr int step = 1;
+
+	for (int z = 0; z < dataSize.z - step; z += step) {
+		for (int y = 0; y < dataSize.y - step; y += step) {
+			for (int x = 0; x < dataSize.x - step; x += step) {
+
+
+				///
+				int id = tableId(self, data, step, x, y, z);
+
+				bool isect = false;
+				for (int dx = 0; dx < threshold; dx++)
+					for (int dy = 0; dy < threshold; dy++)
+						for (int dz = 0; dz < threshold; dz++)
+						{
+							int xx = x - threshold / 2 + dx;
+							int yy = y - threshold / 2 + dy;
+							int zz = z - threshold / 2 + dz;
+
+							auto xxs = xx + step;
+							auto yys = yy + step;
+							auto zzs = zz + step;
+
+							if (xx < 0 || xx >= dataSize.x ||
+								yy < 0 || yy >= dataSize.y ||
+								zz < 0 || zz >= dataSize.z ||
+								xxs < 0 || xxs >= dataSize.x ||
+								yys < 0 || yys >= dataSize.y ||
+								zzs < 0 || zzs >= dataSize.z)
+								continue;
+
+							auto id2 = tableId(value2, d2, step, xx, yy, zz);
+							if (!(id == 0 || id == 255 || id2 == 0 || id2 == 255))
+							{
+								isect = true;
+								goto ex;
+								
+							}
+						}
+				ex:
+				if (!isect) continue;
+
+				///
+
+				for (int i = 0; m_triangleTable[id][i] != -1; i += 3) {
+					//for a single triangle mesh
+
+					ysl::Point3f tri[3];
+
+					for (int j = 0; j < 3; j++) {
+						int e = m_triangleTable[id][i + j];
+						int v1x = x + m_edgeToVertex[e][0] * step;
+						int v1y = y + m_edgeToVertex[e][1] * step;
+						int v1z = z + m_edgeToVertex[e][2] * step;
+						int v2x = x + m_edgeToVertex[e][3] * step;
+						int v2y = y + m_edgeToVertex[e][4] * step;
+						int v2z = z + m_edgeToVertex[e][5] * step;
+
+						int v1value = data[ysl::Linear({ v1x, v1y, v1z }, { dataSize.x,dataSize.y })];
+						int v2value = data[ysl::Linear({ v2x, v2y, v2z }, { dataSize.x,dataSize.y })];
+						//ysl::Log("%d %d", v1z,v2z);
+						tri[j] = ysl::Lerp((float)(self - v1value) / (float)(v2value - v1value),
+							ysl::Point3f(v1x, v1y, v1z),
+							ysl::Point3f(v2x, v2y, v2z));
+						triangles.push_back(tri[j]);
+						normals.push_back(ysl::Vector3f((gradient[ysl::Linear({ v1x,v1y,v1z }, { dataSize.x,dataSize.y })] + gradient[ysl::Linear({ v2x, v2y, v2z }, { dataSize.x,dataSize.y })]) / 2));
+					}
+					//normals.push_back(-ysl::Vector3f::Cross(tri[1]-tri[0],tri[2]-tri[1]));
+				}
+			}
+		}
+	}
+
+
+	std::vector<int> indices;
+	for (int i = 0; i < triangles.size(); i++)
+		indices.push_back(i);
+
+	//std::cout << triangles.size() << std::endl;
+
+	return std::make_shared<ysl::TriangleMesh>(ysl::Transform{},
+		triangles.data(),
+		normals.data(),
+		nullptr,
+		triangles.size(),
+		indices.data(),
+		triangles.size() / 3);
+}
+//
+//std::shared_ptr<ysl::TriangleMesh> MeshGenerator::GenerateIntersectionMeshOf(int value0, int value1, int threshold)
+//{
+//	std::vector<ysl::Point3f> triangles;
+//	std::vector<ysl::Vector3f> normals;
+//
+//	int step = threshold;
+//
+//	for (int z = 0; z < dataSize.z - step; z += step) {
+//		for (int y = 0; y < dataSize.y - step; y += step) {
+//			for (int x = 0; x < dataSize.x - step; x += step) {
+//				
+//
+//				int id0 = 0;
+//				id0 += data[ysl::Linear({ x, y + step, z + step }, { dataSize.x,dataSize.y })] > value0 ? (1 << 0) : (0);
+//				id0 += data[ysl::Linear({ x, y + step, z }, { dataSize.x,dataSize.y })] > value0 ? (1 << 1) : (0);
+//				id0 += data[ysl::Linear({ x, y, z }, { dataSize.x,dataSize.y })] > value0 ? (1 << 2) : (0);
+//				id0 += data[ysl::Linear({ x, y, z + step }, { dataSize.x,dataSize.y })] > value0 ? (1 << 3) : (0);
+//				id0 += data[ysl::Linear({ x + step, y + step, z + step }, { dataSize.x,dataSize.y })] > value0 ? (1 << 4) : (0);
+//				id0 += data[ysl::Linear({ x + step, y + step, z }, { dataSize.x,dataSize.y })] > value0 ? (1 << 5) : (0);
+//				id0 += data[ysl::Linear({ x + step, y , z }, { dataSize.x,dataSize.y })] > value0 ? (1 << 6) : (0);
+//				id0 += data[ysl::Linear({ x + step, y, z + step }, { dataSize.x,dataSize.y })] > value0 ? (1 << 7) : (0);
+//
+//
+//				int id1 = 0;
+//				id1 += data[ysl::Linear({ x, y + step, z + step }, { dataSize.x,dataSize.y })] > value1 ? (1 << 0) : (0);
+//				id1 += data[ysl::Linear({ x, y + step, z }, { dataSize.x,dataSize.y })] > value1 ? (1 << 1) : (0);
+//				id1 += data[ysl::Linear({ x, y, z }, { dataSize.x,dataSize.y })] > value1 ? (1 << 2) : (0);
+//				id1 += data[ysl::Linear({ x, y, z + step }, { dataSize.x,dataSize.y })] > value1 ? (1 << 3) : (0);
+//				id1 += data[ysl::Linear({ x + step, y + step, z + step }, { dataSize.x,dataSize.y })] > value1 ? (1 << 4) : (0);
+//				id1 += data[ysl::Linear({ x + step, y + step, z }, { dataSize.x,dataSize.y })] > value1 ? (1 << 5) : (0);
+//				id1 += data[ysl::Linear({ x + step, y , z }, { dataSize.x,dataSize.y })] > value1 ? (1 << 6) : (0);
+//				id1 += data[ysl::Linear({ x + step, y, z + step }, { dataSize.x,dataSize.y })] > value1 ? (1 << 7) : (0);
+//
+//				if(id0 == 0 || id0 == 255 || id1 == 0 || id1 == 255)
+//					continue;
+//
+//
+//				for (int i = 0; m_triangleTable[id0][i] != -1; i += 3) {
+//					//for a single triangle mesh
+//
+//					ysl::Point3f tri[3];
+//
+//					for (int j = 0; j < 3; j++) {
+//						int e = m_triangleTable[id0][i + j];
+//						int v1x = x + m_edgeToVertex[e][0] * step;
+//						int v1y = y + m_edgeToVertex[e][1] * step;
+//						int v1z = z + m_edgeToVertex[e][2] * step;
+//						int v2x = x + m_edgeToVertex[e][3] * step;
+//						int v2y = y + m_edgeToVertex[e][4] * step;
+//						int v2z = z + m_edgeToVertex[e][5] * step;
+//
+//						int v1value = data[ysl::Linear({ v1x, v1y, v1z }, { dataSize.x,dataSize.y })];
+//						int v2value = data[ysl::Linear({ v2x, v2y, v2z }, { dataSize.x,dataSize.y })];
+//						//ysl::Log("%d %d", v1z,v2z);
+//						tri[j] = ysl::Lerp((float)(value0 - v1value) / (float)(v2value - v1value),
+//							ysl::Point3f(v1x, v1y, v1z),
+//							ysl::Point3f(v2x, v2y, v2z));
+//						triangles.push_back(tri[j]);
+//						normals.push_back(ysl::Vector3f((gradient[ysl::Linear({ v1x,v1y,v1z }, { dataSize.x,dataSize.y })] + gradient[ysl::Linear({ v2x, v2y, v2z }, { dataSize.x,dataSize.y })]) / 2));
+//					}
+//					//normals.push_back(-ysl::Vector3f::Cross(tri[1]-tri[0],tri[2]-tri[1]));
+//				}
+//			}
+//		}
+//	}
+//
+//
+//	std::vector<int> indices;
+//	for (int i = 0; i < triangles.size(); i++)
+//		indices.push_back(i);
+//
+//	//std::cout << triangles.size() << std::endl;
+//
+//	return std::make_shared<ysl::TriangleMesh>(ysl::Transform{},
+//		triangles.data(),
+//		normals.data(),
+//		nullptr,
+//		triangles.size(),
+//		indices.data(),
+//		triangles.size() / 3);
+//
+//}
+
+int MeshGenerator::tableId(int v, const unsigned char * d, int step, int x, int y, int z)
+{
+	int id2 = 0;
+	id2 += d[ysl::Linear({ x, y + step, z + step }, { dataSize.x,dataSize.y })] > v ? (1 << 0) : (0);
+	id2 += d[ysl::Linear({ x, y + step, z }, { dataSize.x,dataSize.y })] > v ? (1 << 1) : (0);
+	id2 += d[ysl::Linear({ x, y, z }, { dataSize.x,dataSize.y })] > v ? (1 << 2) : (0);
+	id2 += d[ysl::Linear({ x, y, z + step }, { dataSize.x,dataSize.y })] > v ? (1 << 3) : (0);
+	id2 += d[ysl::Linear({ x + step, y + step, z + step }, { dataSize.x,dataSize.y })] > v ? (1 << 4) : (0);
+	id2 += d[ysl::Linear({ x + step, y + step, z }, { dataSize.x,dataSize.y })] > v ? (1 << 5) : (0);
+	id2 += d[ysl::Linear({ x + step, y , z }, { dataSize.x,dataSize.y })] > v ? (1 << 6) : (0);
+	id2 += d[ysl::Linear({ x + step, y, z + step }, { dataSize.x,dataSize.y })] > v ? (1 << 7) : (0);
+	return id2;
 }
 
 void MeshGenerator::Preprocess() {
@@ -216,8 +406,8 @@ void MeshGenerator::Preprocess() {
 //}
 
 MeshGenerator::OctreeNode *MeshGenerator::BuildOctree(const ysl::Size3 &size, const unsigned char* d,
-                                                      const ysl::Bound3i &octreeBound,
-                                                      const ysl::Bound3i &dataBound, int thresholdVolume)
+	const ysl::Bound3i &octreeBound,
+	const ysl::Bound3i &dataBound, int thresholdVolume)
 {
 	//auto dx = (root->max_point.x - root->min_point.x);
 	//auto dy = (root->max_point.y - root->min_point.y);
@@ -235,8 +425,8 @@ MeshGenerator::OctreeNode *MeshGenerator::BuildOctree(const ysl::Size3 &size, co
 				for (int x = 0; x < diagnal.x; x++) {
 					const auto global = dataBound.min + ysl::Vector3i{ x,y,z };
 					const auto i = global.x + size.x*(global.y + global.z * size.y);
-					minV = (std::min)((unsigned char (d[i])), minV);
-					maxV = (std::max)((unsigned char (d[i])), maxV);
+					minV = (std::min)((unsigned char(d[i])), minV);
+					maxV = (std::max)((unsigned char(d[i])), maxV);
 				}
 			}
 		}
@@ -352,7 +542,7 @@ void MeshGenerator::DestroyOctree(MeshGenerator::OctreeNode *octree)
 
 MeshGenerator::OctreeNode *MeshGenerator::CreateOctree(const unsigned char* d, const ysl::Bound3i &bound, int thVolume)
 {
-	ysl::Size3 dataSize(bound.max.x,bound.max.y,bound.max.z);
+	ysl::Size3 dataSize(bound.max.x, bound.max.y, bound.max.z);
 	ysl::Bound3i octreeBound;
 	octreeBound.min = ysl::Point3i{ 0,0,0 };
 	octreeBound.max = ysl::Point3i{ ysl::NextPowerOfTwo((std::uint32_t)bound.max.x),ysl::NextPowerOfTwo((std::uint32_t)bound.max.y),ysl::NextPowerOfTwo((std::uint32_t)bound.max.z) };
@@ -362,8 +552,8 @@ MeshGenerator::OctreeNode *MeshGenerator::CreateOctree(const unsigned char* d, c
 }
 
 void MeshGenerator::TraverseOctree(MeshGenerator::OctreeNode * root, std::vector<ysl::Point3f> &triangles,
-                                   std::vector<ysl::Vector3f> &normals, int value, const ysl::Size3 &dataSize,
-                                   const unsigned char* data, const std::vector<ysl::Vector3f> &gradient)
+	std::vector<ysl::Vector3f> &normals, int value, const ysl::Size3 &dataSize,
+	const unsigned char* data, const std::vector<ysl::Vector3f> &gradient)
 {
 
 	if (!root) return;
@@ -404,8 +594,8 @@ void MeshGenerator::TraverseOctree(MeshGenerator::OctreeNode * root, std::vector
 							const auto p1 = ysl::Point3i{ v1x,v1y,v1z };
 							const auto p2 = ysl::Point3i{ v2x,v2y,v2z };
 
-							unsigned char v1value = data[ysl::Linear(p1+min, { dataSize.x,dataSize.y })];
-							unsigned char v2value = data[ysl::Linear(p2+min, { dataSize.x,dataSize.y })];
+							unsigned char v1value = data[ysl::Linear(p1 + min, { dataSize.x,dataSize.y })];
+							unsigned char v2value = data[ysl::Linear(p2 + min, { dataSize.x,dataSize.y })];
 
 							//triangles.push_back(interpulation(v1x, v1y, v1z, v2x, v2y, v2z, v1value, v2value, value));
 							triangles.push_back(ysl::Lerp(float((value - v1value) / (v2value - v1value)), p1, p2));

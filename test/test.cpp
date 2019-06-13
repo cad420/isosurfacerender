@@ -11,8 +11,6 @@ test::test(QWidget *parent)
 	removeButton = new QPushButton(QStringLiteral("Remove"), this);
 	visibleButton = new QPushButton(QStringLiteral("Visibility"),this);
 
-	
-
 
 	visible = false;
 
@@ -38,9 +36,18 @@ test::test(QWidget *parent)
 		//renderer->addVolumeData("isabel", (unsigned char*)readData("D:\\scidata\\Isabel.raw",500,500,100), 500,500,100);
 		//renderer->addIsoSurface("isabel", "isabel_200", QColor(128, 54, 188, 128), 50);
 
-		renderer->addVolumeData("head", (unsigned char*)readData("D:\\scidata\\head.raw", 256, 256, 225), 256, 256, 225);
-		renderer->addIsoSurface("head", "head_50", QColor(10,10,255, 200), 50);
-		renderer->addIsoSurface("head", "head_80", QColor(128,255,0, 200), 120);
+		//renderer->addVolumeData("head", (unsigned char*)readData("D:\\scidata\\head.raw", 256, 256, 225), 256, 256, 225);
+		//renderer->addIsoSurface("head", "head_50", QColor(10,10,255, 200), 50);
+		//renderer->addIsoSurface("head", "head_80", QColor(128,255,0, 200), 120);
+
+		renderer->addVolumeData("mix", (unsigned char*)readData("D:\\Desktop\\H.raw", 600, 248, 248), 600, 248, 248);
+		renderer->addIsoSurface("mix", "mix_50", QColor(0,0,255, 150), 0);
+		renderer->addVolumeData("chi", (unsigned char*)readData(R"(D:\Desktop\temperature.raw)", 600,248,248), 600,248,248);
+		renderer->addIsoSurface("chi", "chi_100", QColor(0,255,0,150), 200);
+
+		renderer->setIntersectionOfIsosurfaces("isect_mix_chi", QColor(255, 0, 0, 150), "mix", "mix_50", 0, "chi", "chi_100", 200, 1, 1);
+		//renderer->setIsosurfaceVisibility("mix", "mix_50", false);
+		//renderer->setIsosurfaceVisibility("chi", "chi_100", false);
 
 		//renderer->addIsoSurface("head", "head_20", QColor(128,87, 32, 100), 20);
 

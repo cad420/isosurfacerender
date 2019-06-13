@@ -330,7 +330,7 @@ public:
     MeshGenerator(const unsigned char * d,ysl::Size3 size);
 
 	MeshGenerator(const unsigned char * d,ysl::Size3 size,ysl::Vec3f space);
-
+	
     MeshGenerator(const MeshGenerator &) = delete;
 
 	MeshGenerator(MeshGenerator && generator)noexcept;
@@ -339,26 +339,34 @@ public:
 
 	MeshGenerator &operator=(MeshGenerator && generator)noexcept;
 
-
 	//std::pair<std::vector<ysl::Point3f>, std::vector<ysl::Vector3f>> GenerateMeshEx(int value)const;
 
 	std::shared_ptr<ysl::TriangleMesh> GenerateMesh(int value)const;
 
+	const unsigned char * Data()const { return data; }
+
+	//std::shared_ptr<ysl::TriangleMesh> GenerateIntersectionMeshOf(int value1, int value2, int threshold);
+	std::shared_ptr<ysl::TriangleMesh> GenerateIntersectionMeshOf(int value1, const unsigned char* d2,int value2, int threshold);
+
 	ysl::Vec3f space()const { return ysl::Vec3f{ dataXSpace,dataYSpace,dataZSpace }; }
-
-
 
 	ysl::Size3 DataSize()const { return dataSize; }
 
+
 private:
+
+	int tableId(int value,const unsigned char * d,int step,int x,int y,int z);
+
     //ysl::Vector3f interpulation(int x1,int y1,int z1,int x2,int y2,int z2,int value1,int value2,int iso);
 
     void Preprocess();
     OctreeNode * root;
     ysl::Size3 dataSize;
-    const unsigned char *  data;
+	//
+    const unsigned char * data;
     std::vector<ysl::Vector3f> gradient;
     float dataXSpace,dataYSpace,dataZSpace;
+	//
 
 };
 
