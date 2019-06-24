@@ -1,6 +1,7 @@
 #version 430 core
 
-uniform sampler1D texTransfunc;
+//uniform sampler1D texTransfunc;
+uniform sampler1DArray texTransfunc;
 uniform sampler2DRect texStartPos;
 uniform sampler2DRect texEndPos;
 uniform sampler3D texVolume;
@@ -72,7 +73,8 @@ void main()
 	for (int i = 0; i < steps; ++i) {
 		vec3 samplePoint = rayStart + direction * step * (float(i) + 0.5);
 		vec4 scalar = texture(texVolume, samplePoint);
-		vec4 sampledColor = texture(texTransfunc, scalar.r);
+		//vec4 sampledColor = texture(texTransfunc, scalar.r);
+		vec4 sampledColor = texture(texTransfunc,vec2(scalar.r,1));
 		sampledColor.rgb = PhongShading(samplePoint, sampledColor.rgb);
 		color = color + sampledColor * vec4(sampledColor.aaa, 1.0) * (1.0 - color.a);
 		if (color.a > 0.99)

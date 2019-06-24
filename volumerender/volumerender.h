@@ -14,7 +14,8 @@ class Q_DECL_EXPORT VolumeRenderer :public QOpenGLWidget
 public:
 	VolumeRenderer(QWidget * parent = nullptr);
 	void setVolumeData(unsigned char * data, std::size_t width, std::size_t height, std::size_t depth, float xSpacing, float ySpacing, float zSpacing);
-	void setTransferFunction(float * transferFuncs);
+	void setMask(unsigned char * mask, const QVector<int>& masks);
+	void setTransferFunction(int mask, float* transferFuncs);
 	void setIlluminationParams(float ka,float ks,float kd,float shininess);
 	void initializeGL() override;
 	void paintGL() override;

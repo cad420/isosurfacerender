@@ -200,6 +200,7 @@ namespace ysl
 		glActiveTexture(texUnit);
 		glBindTexture(target, textureId);
 		glUniform1i(location, texUnit - OpenGLTexture::TextureUnit0);
+		GL_ERROR_REPORT;
 	}
 
 	void ShaderProgram::setUniformSampler(int location, OpenGLTexture::TextureUnit texUnit,

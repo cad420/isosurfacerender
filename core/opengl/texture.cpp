@@ -64,12 +64,16 @@ void OpenGLTexture::SetData(InternalFormat internalFmt,
 		glTexImage1D(target, 0, internalFmt, x, 0, extFmt, extType, data);
 	}
 		
-	if (target == Texture2D || target == Texture2DRect)
+	if (target == Texture2D || target == Texture2DRect )
 	{
 		glTexImage2D(target, 0, internalFmt, x, y, 0, extFmt, extType, data);
 	}
+
+	if (target == Texture1DArray) {
+		glTexStorage2D(target, 1, internalFmt, x, y);
+	}
 		
-	if (target == Texture3D)
+	if (target == Texture3D || target == Texture2DArray)
 	{
 		glTexImage3D(target, 0, internalFmt, x, y, z, 0, extFmt, extType, data);
 	}
@@ -84,9 +88,9 @@ void OpenGLTexture::SetSubData(
 	Bind();
 	if (target == Texture1D )
 		glTexSubImage1D(target, 0, xOffset, x,  extFmt, extType, data);
-	if (target == Texture2D || target == Texture2DRect)
+	if (target == Texture2D || target == Texture2DRect || target == Texture1DArray)
 		glTexSubImage2D(target, 0, xOffset,yOffset, x, y,  extFmt, extType, data);
-	if (target == Texture3D)
+	if (target == Texture3D || target == Texture2DArray)
 		glTexSubImage3D(target, 0, xOffset,yOffset,zOffset,x, y, z, extFmt, extType, data);
 }
 
@@ -235,5 +239,17 @@ std::shared_ptr<OpenGLTexture> OpenGLTexture::CreateTexture3D(InternalFormat fmt
 		ptr->SetData(fmt, extFmt, type, width, height, depth, data);
 	}
 		
+	return ptr;
+}
+
+std::shared_ptr<OpenGLTexture> OpenGLTexture::CreateTexture1DArray(InternalFormat fmt, FilterMode min, FilterMode mag, WrapMode rWrapMode, ExternalDataFormat extFmt, ExternalDataType type, int width, int height, void * data)
+{
+	auto ptr = std::make_shared<OpenGLTexture>(Texture1DArray, min, mag, rWrapMode);
+	if (ptr)
+	{
+		ptr->Bind();
+		ptr->SetData(fmt, extFmt, type, width, height,0, data);
+	}
+
 	return ptr;
 }

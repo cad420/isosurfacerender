@@ -3,7 +3,27 @@
 
 namespace ysl
 {
-	void ColorInterpulator::read(const std::string& fileName)
+	void ColorInterpulator::AddColorKey(float intensity, ysl::Color color)
+	{
+		const auto spectrum = TranslateColor(color);
+		AddColorKey(intensity, spectrum);
+	}
+
+	void ColorInterpulator::AddColorKey(float intensity, const RGBASpectrum& spectrum)
+	{
+		keys.emplace_back(intensity, spectrum, spectrum);
+		m_valid = false;
+	}
+
+	void ColorInterpulator::Sort()
+	{
+		if (keys.empty())
+			return;
+		std::sort(keys.begin(), keys.end(), [](const MappingKey & k1, const MappingKey & k2) {return k1.Intensity() < k2.Intensity(); });
+		m_valid = true;
+	}
+
+	void ColorInterpulator::Read(const std::string& fileName)
 	{
 		FILE* fp = fopen(fileName.c_str(), "r");
 		if (!fp)
@@ -28,10 +48,14 @@ namespace ysl
 			rgba1[2] = bl / 255.0f;
 			rgba1[3] = al / 255.0f;
 			rgba2[0] = rr / 255.0f;
-			rgba2[1] = br / 255.0f;
-			rgba2[2] = gr / 255.0f;
+			rgba2[1] = gr / 255.0f;
+			rgba2[2] = br / 255.0f;
 			rgba2[3] = ar / 255.0f;
-			keys.emplace_back(intensity, ysl::RGBASpectrum{ rgba1 }, ysl::RGBASpectrum{ rgba2 });
+
+			const auto s1 = ysl::RGBASpectrum{ rgba1 };
+			const auto s2 = ysl::RGBASpectrum{ rgba2 };
+
+			keys.emplace_back(intensity, s1, s2);
 		}
 		m_valid = true;
 		fclose(fp);
@@ -77,6 +101,8 @@ namespace ysl
 		}
 		for (int x = backStart; x < dimension; ++x)
 			transferFunction[x] = RGBASpectrum{ 0.f };
+
+
 	}
 
 	TransferFunction::TransferFunction(const std::string& fileName) :ColorInterpulator(fileName)

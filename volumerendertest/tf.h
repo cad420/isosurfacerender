@@ -7,6 +7,36 @@
 
 namespace ysl
 {
+
+	enum class Color
+	{
+		green,
+		red,
+		blue,
+		white,
+		black,
+		yellow,
+		transparent,
+		gray
+	};
+
+	inline RGBASpectrum TranslateColor(ysl::Color color)
+	{
+		float c[4];
+		switch (color)
+		{
+		case Color::green:	(c[0] = 0, c[1] = 1, c[2] = 0, c[3] = 1); break;
+		case Color::red:	(c[0] = 1, c[1] = 0, c[2] = 0, c[3] = 1); break;
+		case Color::blue:	(c[0] = 0, c[1] = 0, c[2] = 1, c[3] = 1); break;
+		case Color::white:	(c[0] = 1, c[1] = 1, c[2] = 1, c[3] = 1); break;
+		case Color::yellow:	(c[0] = 1, c[1] = 1, c[2] = 0, c[3] = 1); break;
+		case Color::black:	(c[0] = 0, c[1] = 0, c[2] = 0, c[3] = 1); break;
+		case Color::transparent: (c[0] = 1, c[1] = 1, c[2] = 1, c[3] = 0); break;
+		case Color::gray: (c[0] = 0.5, c[1] = 0.5, c[2] = 0.5, c[3] = 0.5); break;
+		}
+		return RGBASpectrum(c);
+	}
+
 	class MappingKey
 	{
 	public:
@@ -41,10 +71,25 @@ namespace ysl
 		ColorInterpulator() :m_valid(false) {}
 		explicit ColorInterpulator(const std::string & fileName) :m_valid(false)
 		{
-			read(fileName);
+			Read(fileName);
 		}
 
-		void read(const std::string& fileName);
+		//template<typename ...Args>
+		//ColorInterpulator(Args&&...args)
+		//{
+		//	
+		//}
+
+		void AddColorKey(float intensity, ysl::Color color);
+		void AddColorKey(float intensity, const RGBASpectrum & spectrum);
+		void Sort();
+		void SetLeftThreshold(float left) { leftThreshold = left; }
+		void SetRightThreshold(float right) { rightThreshold = right; }
+		void SetLeftRightThreshold(float left, float right) { SetLeftThreshold(left); SetRightThreshold(right); }
+		//template<typename  ...Args>
+		//void SetColorKeys(Args&&... args);
+
+		void Read(const std::string& fileName);
 		bool valid()const
 		{
 			return m_valid;
@@ -77,8 +122,8 @@ namespace ysl
 		bool m_valid;
 	protected:
 		std::vector<MappingKey> keys;
-		Float leftThreshold;
-		Float rightThreshold;
+		Float leftThreshold = 0.0;
+		Float rightThreshold = 1.0;
 	};
 
 

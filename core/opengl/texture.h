@@ -32,6 +32,8 @@ public:
 		Texture3D = GL_TEXTURE_3D,
 		Texture2DRect = GL_TEXTURE_RECTANGLE,
 		TextureBuffer = GL_TEXTURE_BUFFER,
+		Texture1DArray = GL_TEXTURE_1D_ARRAY,
+		Texture2DArray = GL_TEXTURE_2D_ARRAY
 	};
 	enum WrapMode
 	{
@@ -48,6 +50,8 @@ public:
 	enum InternalFormat
 	{
 		R8 = GL_R8,
+		R8I = GL_R8I,
+		R8UI = GL_R8UI,
 		R32UI = GL_R32UI,
 		R16F = GL_R16F,
 		RGB8 = GL_RGB8,
@@ -140,6 +144,11 @@ public:
 		FilterMode min, FilterMode mag, WrapMode rWrapMode, WrapMode sWrapMode,WrapMode tWrapMode,
 		ExternalDataFormat extFmt,
 		ExternalDataType type,int width,int height,int depth,void * data);
+
+	static std::shared_ptr<OpenGLTexture> CreateTexture1DArray(InternalFormat fmt,
+		FilterMode min, FilterMode mag, WrapMode rWrapMode,
+		ExternalDataFormat extFmt,
+		ExternalDataType type, int width, int height, void * data);
 private:
 	unsigned int textureId;
 	std::shared_ptr<OpenGLCurrentContext> currentContext;

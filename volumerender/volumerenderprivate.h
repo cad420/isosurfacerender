@@ -24,10 +24,15 @@ public:
 	void InitProxyGeometry();
 	void InitShader();
 	void CreateVolumeTexture();
+	void CreateVolumeMask();
 	
 	void CreateScreenQuads();
-	void CreateTFTexture();
+	//void CreateTFTexture();
+	void CreateTFTextureArray(int count);
 	void UpdateSize(int x, int y);
+
+	void CreateMask2TFIndexMapping(const QVector<int> & mask);
+
 
 	int windowWidth;
 	int windowHeight;
@@ -36,6 +41,7 @@ public:
 	ysl::Transform proj;
 	ysl::Transform ortho;
 	ysl::Point2i lastMousePos;
+	ysl::Size3 volumeSize;
 
 	ysl::ShaderProgram g_rayCastingShaderProgram;
 	ysl::ShaderProgram g_positionShaderProgram;
@@ -48,7 +54,9 @@ public:
 	} screenQuads;
 
 	std::shared_ptr<OpenGLTexture> volumeTexture;
+	std::shared_ptr<OpenGLTexture> maskTexture;
 	std::shared_ptr<OpenGLTexture> g_texTransferFunction;
+	std::shared_ptr<OpenGLTexture> g_iTexTransferFunction;
 	std::shared_ptr<OpenGLFramebufferObject> g_framebuffer;
 
 	std::shared_ptr<OpenGLTexture> g_texEntryPos;
@@ -58,6 +66,8 @@ public:
 	std::shared_ptr<OpenGLBuffer> g_proxyEBO;
 	std::shared_ptr<OpenGLBuffer> g_proxyVBO;
 	OpenGLVertexArrayObject g_proxyVAO;
+
+	std::unordered_map<int, int> mask2TFindex;
 
 	float ka, kd, ks, shininess;
 

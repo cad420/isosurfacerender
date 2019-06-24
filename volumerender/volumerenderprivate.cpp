@@ -138,7 +138,6 @@ void VolumeRendererPrivate::InitShader()
 	g_positionShaderProgram.addShaderFromFile("position_f.glsl", ysl::ShaderProgram::ShaderType::Fragment);
 	g_positionShaderProgram.link();
 
-
 }
 
 void VolumeRendererPrivate::CreateVolumeTexture()
@@ -154,6 +153,21 @@ void VolumeRendererPrivate::CreateVolumeTexture()
 		10,
 		10,
 		10,nullptr);
+}
+
+void VolumeRendererPrivate::CreateVolumeMask()
+{
+	maskTexture = OpenGLTexture::CreateTexture3D(OpenGLTexture::R8,		// R16F
+		OpenGLTexture::Linear,
+		OpenGLTexture::Linear,
+		OpenGLTexture::ClampToEdge,
+		OpenGLTexture::ClampToEdge,
+		OpenGLTexture::ClampToEdge,
+		OpenGLTexture::RED,
+		OpenGLTexture::UInt8,
+		10,
+		10,
+		10, nullptr);
 }
 
 void VolumeRendererPrivate::CreateScreenQuads()
@@ -185,24 +199,32 @@ void VolumeRendererPrivate::CreateScreenQuads()
 
 }
 
-void VolumeRendererPrivate::CreateTFTexture()
+//void VolumeRendererPrivate::CreateTFTexture()
+//{
+//	Q_Q(VolumeRenderer);
+//	g_texTransferFunction = OpenGLTexture::CreateTexture1D(OpenGLTexture::RGBA32F,
+//		OpenGLTexture::Linear, OpenGLTexture::Linear, OpenGLTexture::ClampToEdge, OpenGLTexture::RGBA, OpenGLTexture::Float32, 256, nullptr);
+//
+//
+//	std::vector<ysl::RGBASpectrum> tfData(256);
+//	ysl::TransferFunction tfObject;
+//	tfObject.read("tf1.tfi");
+//	tfObject.FetchData(tfData.data(), 256);
+//
+//	g_texTransferFunction->SetData(OpenGLTexture::RGBA32F,
+//		OpenGLTexture::RGBA,
+//		OpenGLTexture::Float32,
+//		256, 0, 0, tfData.data());
+//
+//}a
+
+void VolumeRendererPrivate::CreateTFTextureArray(int count)
 {
 	Q_Q(VolumeRenderer);
-	g_texTransferFunction = OpenGLTexture::CreateTexture1D(OpenGLTexture::RGBA32F,
-		OpenGLTexture::Linear, OpenGLTexture::Linear, OpenGLTexture::ClampToEdge, OpenGLTexture::RGBA, OpenGLTexture::Float32, 256, nullptr);
-
-
-
-	std::vector<ysl::RGBASpectrum> tfData(256);
-	ysl::TransferFunction tfObject;
-	tfObject.read("tf1.tfi");
-	tfObject.FetchData(tfData.data(), 256);
-
-	g_texTransferFunction->SetData(OpenGLTexture::RGBA32F,
-		OpenGLTexture::RGBA,
-		OpenGLTexture::Float32,
-		256, 0, 0, tfData.data());
-
+	g_iTexTransferFunction = OpenGLTexture::CreateTexture1DArray(OpenGLTexture::RGBA32F,
+		OpenGLTexture::Linear, OpenGLTexture::Linear, OpenGLTexture::ClampToEdge, OpenGLTexture::RGBA, OpenGLTexture::Float32,256,count, nullptr);
+	g_texTransferFunction = OpenGLTexture::CreateTexture2D(OpenGLTexture::RGBA32F,
+		OpenGLTexture::Linear, OpenGLTexture::Linear, OpenGLTexture::ClampToEdge, OpenGLTexture::ClampToEdge, OpenGLTexture::RGBA, OpenGLTexture::Float32, 256, count, nullptr);
 }
 
 void VolumeRendererPrivate::UpdateSize(int x, int y)
@@ -237,4 +259,13 @@ void VolumeRendererPrivate::UpdateSize(int x, int y)
 	screenQuads.vbo->SetSubData(screenSize, sizeof(screenSize), 0);
 	screenQuads.vbo->Unbind();
 
+}
+
+void VolumeRendererPrivate::CreateMask2TFIndexMapping(const QVector<int>& mask)
+{
+	std::unordered_map<int, int>().swap(mask2TFindex);
+	for(int i = 0 ; i < mask.size();i++)
+		mask2TFindex[mask[i]] = i;
+
+	CreateTFTextureArray(mask.size());
 }
